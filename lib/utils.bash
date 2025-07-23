@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for katana.
+# This is the correct GitHub homepage where releases can be downloaded for katana.
 GH_REPO="https://github.com/dojoengine/katana"
 TOOL_NAME="katana"
 TOOL_TEST="katana --version"
@@ -31,7 +31,7 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
+	# By default we simply list the tag names from GitHub releases.
 	# Change this function if katana has other means of determining installable versions.
 	list_github_tags
 }
@@ -41,8 +41,17 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	# TODO: Adapt the release URL convention for katana
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	# Get platform and architecture information to determine file extension
+	read -r PLATFORM EXT ARCH <<<"$(detect_platform_arch)"
+
+	# Determine if we should use native build (defaults to non-native for compatibility)
+	BUILD=""
+	if [ "${ASDF_NATIVE_BUILD:-false}" = "true" ]; then
+		BUILD="_native"
+	fi
+
+	# https://github.com/dojoengine/katana/releases/download/v1.6.3/katana_v1.6.3_darwin_arm64_native.tar.gz
+	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_v${version}_${PLATFORM}_${ARCH}${BUILD}.${EXT}"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
@@ -61,7 +70,6 @@ install_version() {
 		mkdir -p "$install_path"
 		cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-		# TODO: Assert katana executable exists.
 		local tool_cmd
 		tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
 		test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."
@@ -71,4 +79,44 @@ install_version() {
 		rm -rf "$install_path"
 		fail "An error occurred while installing $TOOL_NAME $version."
 	)
+}
+
+# Cribbed from https://github.com/dojoengine/dojo/blob/main/dojoup/dojoup
+detect_platform_arch() {
+	local platform arch ext
+
+	platform="$(uname -s)"
+	arch="$(uname -m)"
+	ext="tar.gz" # Default to tar.gz for Linux and macOS
+
+	case $platform in
+	Linux)
+		platform="linux"
+		;;
+	Darwin)
+		platform="darwin"
+		;;
+	MINGW* | MSYS* | CYGWIN*)
+		ext="zip"
+		platform="win32"
+		;;
+	*)
+		fail "unsupported platform: $platform"
+		;;
+	esac
+
+	if [ "${arch}" = "x86_64" ]; then
+		# On macOS, check if Rosetta
+		if [ "$platform" = "darwin" ] && [ "$(sysctl -n sysctl.proc_translated 2>/dev/null || echo 0)" = "1" ]; then
+			arch="arm64" # Rosetta
+		else
+			arch="amd64" # Intel/AMD64
+		fi
+	elif [ "${arch}" = "arm64" ] || [ "${arch}" = "aarch64" ]; then
+		arch="arm64" # ARM
+	else
+		arch="amd64" # Default to AMD64
+	fi
+
+	echo "$platform $ext $arch"
 }
