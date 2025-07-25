@@ -31,9 +31,8 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# By default we simply list the tag names from GitHub releases.
-	# Change this function if katana has other means of determining installable versions.
-	list_github_tags
+	# We filter out nightly, alpha, rc, and 0.x versions
+	list_github_tags | grep -vE "(nightly|alpha|rc|^0\.)"
 }
 
 download_release() {
