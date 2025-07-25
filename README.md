@@ -32,7 +32,7 @@ katana:
 
 ```shell
 # Show all installable versions
-asdf list-all katana
+asdf list all katana
 
 # Install specific version
 asdf install katana latest
