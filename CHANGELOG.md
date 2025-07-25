@@ -12,4 +12,3 @@
 ### Bug Fixes
 
 * debug plugin-test ([3090eca](https://github.com/dojoengine/asdf-katana/commit/3090ecabc08da3d07979d2e6e59d73c006509410))
-* debug plugin-test to main branch of repo ([3090eca](https://github.com/dojoengine/asdf-katana/commit/3090ecabc08da3d07979d2e6e59d73c006509410))
