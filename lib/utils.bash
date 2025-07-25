@@ -41,20 +41,9 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	# Get platform and architecture information to determine file extension
-	read -r PLATFORM EXT ARCH <<<"$(detect_platform_arch)"
+	url="$GH_REPO/releases/download/v${version}/${filename}"
 
-	# Determine if we should use native build (defaults to non-native for compatibility)
-	BUILD=""
-	if [ "${ASDF_NATIVE_BUILD:-false}" = "true" ]; then
-		BUILD="_native"
-	fi
-
-	# https://github.com/dojoengine/katana/releases/download/v1.6.3/katana_v1.6.3_darwin_arm64_native.tar.gz
-	url="$GH_REPO/releases/download/v${version}/${TOOL_NAME}_v${version}_${PLATFORM}_${ARCH}${BUILD}.${EXT}"
-
-	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	curl "${curl_opts[@]}" -o "$ASDF_DOWNLOAD_PATH/$filename" -C - "$url" || fail "Could not download $url"
 }
 
 install_version() {
@@ -119,4 +108,20 @@ detect_platform_arch() {
 	fi
 
 	echo "$platform $ext $arch"
+}
+
+get_binary_name() {
+	local version="$1"
+
+	# Get platform and architecture information to determine file extension
+	read -r PLATFORM EXT ARCH <<<"$(detect_platform_arch)"
+
+	# Determine if we should use native build (defaults to non-native for compatibility)
+	BUILD=""
+	if [ "${ASDF_NATIVE_BUILD:-false}" = "true" ]; then
+		BUILD="_native"
+	fi
+
+	# i.e. katana_v1.6.3_darwin_arm64_native.tar.gz
+	echo "${TOOL_NAME}_v${version}_${PLATFORM}_${ARCH}${BUILD}.${EXT}"
 }

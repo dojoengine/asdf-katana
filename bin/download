@@ -11,19 +11,21 @@ source "${plugin_dir}/lib/utils.bash"
 mkdir -p "$ASDF_DOWNLOAD_PATH"
 
 # Set release file name with correct extension
-release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$ASDF_INSTALL_VERSION.tar.gz"
+release_file="$(get_binary_name "$ASDF_INSTALL_VERSION")"
+release_file_path="$ASDF_DOWNLOAD_PATH/$release_file"
 
 # Download release file to the download directory
-download_release "$ASDF_INSTALL_VERSION" "$release_file"
-
-tar -xzf "$release_file" -C "$ASDF_DOWNLOAD_PATH" --strip-components=1 || fail "Could not extract $release_file"
+echo "* Downloading $TOOL_NAME release $ASDF_INSTALL_VERSION..."
+download_release "$ASDF_INSTALL_VERSION" "$release_file" || fail "Could not download $release_file"
 
 # Extract contents based on file extension
-# if [ "$EXT" = "zip" ]; then
-# 	unzip -q "$release_file" -d "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
-# else
-# 	tar -xzf "$release_file" -C "$ASDF_DOWNLOAD_PATH" --strip-components=1 || fail "Could not extract $release_file"
-# fi
+echo "* Extracting $TOOL_NAME release $ASDF_INSTALL_VERSION..."
+if [[ "$release_file" == *.zip ]]; then
+	unzip -q "$release_file_path" -d "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
+else
+	tar -xzf "$release_file_path" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
+fi
 
 # Remove the archive file since we don't need to keep it
-rm "$release_file"
+echo "* Removing $TOOL_NAME archive file..."
+rm "$release_file_path"
