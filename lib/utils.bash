@@ -42,6 +42,7 @@ download_release() {
 
 	url="$GH_REPO/releases/download/v${version}/${filename}"
 
+	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$ASDF_DOWNLOAD_PATH/$filename" -C - "$url" || fail "Could not download $url"
 }
 

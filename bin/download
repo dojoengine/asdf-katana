@@ -15,11 +15,9 @@ release_file="$(get_binary_name "$ASDF_INSTALL_VERSION")"
 release_file_path="$ASDF_DOWNLOAD_PATH/$release_file"
 
 # Download release file to the download directory
-echo "* Downloading $TOOL_NAME release $ASDF_INSTALL_VERSION..."
 download_release "$ASDF_INSTALL_VERSION" "$release_file" || fail "Could not download $release_file"
 
 # Extract contents based on file extension
-echo "* Extracting $TOOL_NAME release $ASDF_INSTALL_VERSION..."
 if [[ "$release_file" == *.zip ]]; then
 	unzip -q "$release_file_path" -d "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
 else
@@ -27,5 +25,4 @@ else
 fi
 
 # Remove the archive file since we don't need to keep it
-echo "* Removing $TOOL_NAME archive file..."
 rm "$release_file_path"
